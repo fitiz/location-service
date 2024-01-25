@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: location-service
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: cloud-sql-proxy
+          args:
+            - "--port=5432"
+            - "fitiz-app:europe-west3:location-service-db"
+        - name: location-service
+          image: europe-west10-docker.pkg.dev/fitiz-app/fitiz/location-service-image-dev:0.0.1
+          env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: location-service-infra
+                  key: SPRING_DATASOURCE_USERNAME
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: location-service-infra
+                  key: SPRING_DATASOURCE_PASSWORD
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: location-service-infra
+                  key: SPRING_DATASOURCE_URL
+          resources:
+            requests:
+              memory: "500Mi"
+            limits:
+              memory: "1500Mi"
